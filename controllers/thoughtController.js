@@ -60,6 +60,7 @@ const thoughtController = {
             if (!updatedThought) {
                 return res.status(404).json({ message: 'Thought not found' });
             }
+            res.json(updatedThought);
         } catch (err) {
             console.error(err);
             res.status(500).json(err);

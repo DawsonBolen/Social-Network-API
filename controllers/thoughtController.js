@@ -51,6 +51,8 @@ const thoughtController = {
         }
     },
 
+
+
     updateThought: async (req, res) => {
         try {
             const thoughtId = req.params.thoughtId;
@@ -65,8 +67,81 @@ const thoughtController = {
             console.error(err);
             res.status(500).json(err);
         }
-    }
+    },
+    deleteThought: async (req, res) => {
+        try {
+            const thoughtId = req.params.thoughtId;
+            const deletedThought = await Thought.findOneAndRemove(thoughtId);
+            if (!deletedThought) {
+                return res.status(404).json({ message: 'Thought not found' });
+            }
+            res.json(deletedThought);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+        }
+    },
+    // addReaction: async (req, res) => {
+    //     try {
 
+    //         const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $push: { reactions: newReactions } }, { new: true });
+    //         if (!updatedThought) {
+    //             console.log('Thought not found.');
+    //             return;
+    //         }
+
+    //         res.json(updatedThought);
+
+    //         await thought.save();
+
+    //     } catch (err) {
+    //         console.error(err);
+    //         res.status(500).json(err);
+    //     }
+    // },
+    addReaction: async (req, res) => {
+        try {
+            const thoughtId = req.params.thoughtId;
+            const { reactionBody, username } = req.body;
+
+            // Create the new reaction
+            const newReaction = {
+                reactionBody: reactionBody,
+                username: username,
+            };
+
+            // Update the thought with the new reaction
+            const updatedThought = await Thought.findByIdAndUpdate(
+                thoughtId,
+                { $push: { reactions: newReaction } },
+                { new: true }
+            );
+
+            if (!updatedThought) {
+                console.log('Thought not found.');
+                return;
+            }
+
+            res.json(updatedThought);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+        }
+    },
+    romoveReaction: async (req, res) => {
+        try {
+            const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $pull: { reactions: req.params.reactionId } }, { new: true });
+            if (!updatedThought) {
+                console.log('Thought not found.');
+                return;
+            }
+
+            res.json(updatedThought);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+        }
+    }
 
 
 
@@ -77,14 +152,3 @@ module.exports = thoughtController;
 
 
 
-  // const updatedUser = await User.findByIdAndUpdate(
-            //     userId,
-            //     { $push: { thoughts: newThought._id } },
-            //     { new: true }
-            // );
-
-
-            // if (!updatedUser) {
-            //     // If the user is not found, handle the error accordingly
-            //     return res.status(404).json({ message: 'User not found' });
-            // }

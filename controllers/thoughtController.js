@@ -14,10 +14,10 @@ const thoughtController = {
     },
     getSingleThought: async (req, res) => {
         try {
+            const singleThought = await Thought.findOne({ _id: req.params.thoughtId }).select('-__v');
             if (!singleThought) {
                 return res.status(404).json({ message: 'No thought with that ID' });
             }
-            const singleThought = await Thought.findOne({ _id: req.params.thoughtId }).select('-__v');
             res.json(singleThought);
         } catch (err) {
             console.error(err);
@@ -26,21 +26,40 @@ const thoughtController = {
     },
     createThought: async (req, res) => {
         try {
-            const newThought = Thought.create(req.body);
-            const userId = req.body.userId;
-            const updatedUser = await User.findByIdAndUpdate(
-                userId,
-                { $push: { thoughts: newThought._id } },
-                { new: true }
-            );
+            // const newThought = await Thought.create(req.body);
+            const userId = req.params.userId;
 
-            if (!updatedUser) {
-                // If the user is not found, handle the error accordingly
+            const user = await User.findById(userId);
+
+            if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
+
+            const newThought = await Thought.create({
+                thoughtText: req.body.thoughtText,
+                username: user.username,
+            });
+
+            user.thoughts.push(newThought._id);
+
             await user.save();
 
             res.json(newThought);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+        }
+    },
+
+    updateThought: async (req, res) => {
+        try {
+            const thoughtId = req.params.thoughtId;
+            const updateData = req.body;
+            const updatedThought = await Thought.findByIdAndUpdate(thoughtId, updateData, { new: true });
+
+            if (!updatedThought) {
+                return res.status(404).json({ message: 'Thought not found' });
+            }
         } catch (err) {
             console.error(err);
             res.status(500).json(err);
@@ -51,3 +70,20 @@ const thoughtController = {
 
 
 }
+
+module.exports = thoughtController;
+
+
+
+
+  // const updatedUser = await User.findByIdAndUpdate(
+            //     userId,
+            //     { $push: { thoughts: newThought._id } },
+            //     { new: true }
+            // );
+
+
+            // if (!updatedUser) {
+            //     // If the user is not found, handle the error accordingly
+            //     return res.status(404).json({ message: 'User not found' });
+            // }

@@ -128,7 +128,7 @@ const thoughtController = {
             res.status(500).json(err);
         }
     },
-    romoveReaction: async (req, res) => {
+    removeReaction: async (req, res) => {
         try {
             const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $pull: { reactions: req.params.reactionId } }, { new: true });
             if (!updatedThought) {

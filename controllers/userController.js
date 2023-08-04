@@ -59,7 +59,7 @@ const userController = {
     deleteUser: async (req, res) => {
         try {
             const userId = req.params.userId;
-            const deletedUser = await User.findOneAndRemove(userId);
+            const deletedUser = await User.findOneAndRemove({ _id: userId });
             if (!deletedUser) {
                 return res.status(404).json({ message: 'User not found' });
             }

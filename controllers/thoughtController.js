@@ -71,7 +71,7 @@ const thoughtController = {
     deleteThought: async (req, res) => {
         try {
             const thoughtId = req.params.thoughtId;
-            const deletedThought = await Thought.findOneAndRemove(thoughtId);
+            const deletedThought = await Thought.findOneAndRemove({ _id: thoughtId });
             if (!deletedThought) {
                 return res.status(404).json({ message: 'Thought not found' });
             }
@@ -110,6 +110,30 @@ const thoughtController = {
             console.error(err);
             res.status(500).json(err);
         }
+    },
+
+    removeReaction: async (req, res) => {
+        try {
+            const thoughtId = req.params.thoughtId;
+            const reactionId = req.params.reactionId;
+
+            // Use $pull to remove the specified reaction by its ID
+            const updatedThought = await Thought.findByIdAndUpdate(
+                thoughtId,
+                { $pull: { reactions: { _id: reactionId } } },
+                { new: true }
+            );
+
+            if (!updatedThought) {
+                console.log('Thought not found.');
+                return res.status(404).json({ message: 'Thought not found.' });
+            }
+
+            res.json(updatedThought);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+        }
     }
 
 
@@ -121,36 +145,4 @@ module.exports = thoughtController;
 
 
 
-   // removeReaction: async (req, res) => {
-    //     try {
-    //         const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $pull: { reactions: req.params.reactionId } }, { new: true });
-    //         if (!updatedThought) {
-    //             console.log('Thought not found.');
-    //             return;
-    //         }
 
-    //         res.json(updatedThought);
-    //     } catch (err) {
-    //         console.error(err);
-    //         res.status(500).json(err);
-    //     }
-    // }
-
- // addReaction: async (req, res) => {
-    //     try {
-
-    //         const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $push: { reactions: newReactions } }, { new: true });
-    //         if (!updatedThought) {
-    //             console.log('Thought not found.');
-    //             return;
-    //         }
-
-    //         res.json(updatedThought);
-
-    //         await thought.save();
-
-    //     } catch (err) {
-    //         console.error(err);
-    //         res.status(500).json(err);
-    //     }
-    // },
